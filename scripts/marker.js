@@ -129,7 +129,7 @@ class Marker {
     const rect = new fabric.Rect({
       left: 0,
       top: 0,
-      width: text.width + padding * 2,
+      width: text.width + padding * 42,
       height: text.height + padding * 2,
       fill: 'rgba(255, 255, 255, 0.85)',
       rx: 8,

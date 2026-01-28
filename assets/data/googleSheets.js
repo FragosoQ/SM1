@@ -1,6 +1,6 @@
 // Configuração do Google Sheets
 const SHEET_ID = '1GQUB52a2gKR429bjqJrNkbP5rjR7Z_4v85z9M7_Cr8Y';
-const SHEET_NAME = 'PS1';
+const SHEET_NAME = 'PSMulti';
 
 /**
  * Carrega dados do Google Sheets
@@ -8,7 +8,7 @@ const SHEET_NAME = 'PS1';
  */
 async function loadGoogleSheetData() {
   try {
-    console.log('🌐 Carregando dados do Google Sheets (PS1)...');
+    console.log('🌐 Carregando dados do Google Sheets (PSMulti)...');
     
     // URL para aceder ao Google Sheets como JSON
     const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;

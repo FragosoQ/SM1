@@ -82,8 +82,22 @@ async function preload() {
   try {
     console.log('=== PRELOAD START ===');
     
+    // Carrega conexões PSMulti (colunas W, X, Y)
+    console.log('🔗 Carregando conexões do PSMulti...');
+    if (typeof loadConnectionsFromPSMulti === 'function') {
+      try {
+        data.connections = await loadConnectionsFromPSMulti();
+        console.log('✅ Conexões carregadas do PSMulti:', data.connections);
+      } catch (error) {
+        console.error('❌ Erro ao carregar conexões, usando dados padrão:', error);
+        data.connections = { 'Portugal': ['Nigeria'] };
+      }
+    } else {
+      console.warn('⚠ Função loadConnectionsFromPSMulti não disponível');
+    }
+    
     // Carrega dados do Google Sheets (países e conexões)
-    console.log('📊 Carregando dados do Google Sheets (planilha PS1)...');
+    console.log('📊 Carregando dados do Google Sheets (planilha PSMulti)...');
     if (typeof loadAndApplyGoogleSheetData === 'function') {
       try {
         await loadAndApplyGoogleSheetData();
