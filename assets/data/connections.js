@@ -8,11 +8,12 @@ const normalizeCountryName = (countryName) => {
     
     const normalized = countryName.trim().toLowerCase();
     
-    // Mapeamento de nomes alternativos (mesmo que googleSheets.js)
+    // Mapeamento de nomes alternativos
     const nameMapping = {
         'portugal': 'Portugal',
         'espanha': 'Spain',
         'frança': 'France',
+        'france': 'France',
         'alemanha': 'Germany',
         'itália': 'Italy',
         'croácia': 'Croatia',
@@ -20,6 +21,7 @@ const normalizeCountryName = (countryName) => {
         'eua': 'United States',
         'usa': 'United States',
         'estados unidos': 'United States',
+        'united states': 'United States',
         'brasil': 'Brazil',
         'moçambique': 'Mozambique',
         'angola': 'Angola',
@@ -69,13 +71,13 @@ const loadConnectionsFromPSMulti = async () => {
         const rows = json.table.rows;
         const destinationCountries = [];
         
-        // Look for rows with "Slot_1_Em Curso" or "Slot_2_Em Curso" in STATUS column (AI - index 34)
+        // Look for rows with "Slot_1_Em Curso" or "Slot_2_Em Curso" in column A (Chave de Procura - index 0)
         rows.forEach((row, index) => {
-            const statusCell = row.c[34]; // Column AI (STATUS - index 34)
-            const statusValue = statusCell ? statusCell.v : null;
+            const chaveCell = row.c[0]; // Column A (Chave de Procura - index 0)
+            const chaveValue = chaveCell ? chaveCell.v : null;
             
-            if (statusValue && typeof statusValue === 'string' && 
-                (statusValue.includes('Slot_1_Em Curso') || statusValue.includes('Slot_2_Em Curso'))) {
+            if (chaveValue && typeof chaveValue === 'string' && 
+                (chaveValue.includes('Slot_1_Em Curso') || chaveValue.includes('Slot_2_Em Curso'))) {
                 
                 // Get countries from columns W, X, Y (indices 22, 23, 24)
                 const country1Cell = row.c[22]; // Column W (País 1)
