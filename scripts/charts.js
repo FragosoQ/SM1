@@ -174,13 +174,25 @@ const updateDestination = async () => {
     const countriesWithSlot = await fetchDestinationCountries();
     
     if (countriesWithSlot.length > 0) {
-        destinationTitle.innerHTML = countriesWithSlot
+        // Remove duplicates - keep first occurrence with its slot number
+        const uniqueCountries = [];
+        const seenCountries = new Set();
+        
+        countriesWithSlot.forEach(countryData => {
+            const countryKey = countryData.name.toUpperCase();
+            if (!seenCountries.has(countryKey)) {
+                seenCountries.add(countryKey);
+                uniqueCountries.push(countryData);
+            }
+        });
+        
+        destinationTitle.innerHTML = uniqueCountries
             .map(countryData => {
                 const slotClass = countryData.slotNumber === 2 ? ' slot2' : '';
                 return `<span class="country-tag${slotClass}">${countryData.name.toUpperCase()}</span>`;
             })
             .join('');
-        console.log('Destination card updated with countries:', countriesWithSlot);
+        console.log('Destination card updated with unique countries:', uniqueCountries);
     } else {
         destinationTitle.textContent = 'No destinations';
     }
