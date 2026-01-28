@@ -52,6 +52,7 @@ class Marker {
     const text = this.createText();
     const texture = new THREE.Texture(text);
     texture.minFilter = THREE.LinearFilter;
+    texture.needsUpdate = true;
     textures.markerLabels.push(texture);
 
     const material = new THREE.SpriteMaterial()
@@ -61,7 +62,7 @@ class Marker {
 
     this.label = new THREE.Sprite(material);
     this.label.scale.set( 40, 20, 1 );
-    this.label.center.x = 0.25;
+    this.label.center.x = 0.5;
     this.label.translateY(2);
     this.label.renderOrder = 999;
 
