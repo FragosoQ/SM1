@@ -10,7 +10,7 @@ const chartConfig = {
         // Cores para múltiplos slots
         slotColors: [
             '#4b8cf2', // Azul - Slot_1_Em Curso
-            '#FFD700', // Amarelo - Slot_2_Em Curso
+            '#C0C0C0', // Cinza Prateado - Slot_2_Em Curso
             '#FF8C00', // Laranja
             '#FF69B4', // Rosa
             '#00CED1', // Turquesa
@@ -741,8 +741,8 @@ const fetchInfoPanelData = async () => {
  * Updates GOAL chart with data from PM1
  */
 const updateGoalChart = (diasPrazo, diasUsados, folga) => {
-    // Determine color for middle ring (amarelo se Dias Usados > Dias Prazo)
-    const middleColor = diasUsados > diasPrazo ? '#FFD700' : '#00a2e8';
+    // Determine color for middle ring (cinza prateado se Dias Usados > Dias Prazo)
+    const middleColor = diasUsados > diasPrazo ? '#C0C0C0' : '#00a2e8';
     
     // Determine color for inner ring (vermelho se Folga = 0)
     const innerColor = folga === 0 ? '#FF0000' : '#80a5dc';

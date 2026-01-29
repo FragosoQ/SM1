@@ -75,9 +75,9 @@ canvas {
 }
 
 .country-tag.slot2 {
-    background: rgba(255, 215, 0, 0.2);
-    border: 2px solid rgba(255, 215, 0, 0.6);
-    box-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
+    background: rgba(192, 192, 192, 0.2);
+    border: 2px solid rgba(192, 192, 192, 0.6);
+    box-shadow: 0 0 8px rgba(192, 192, 192, 0.3);
 }
 
 .country-tag:hover {
@@ -87,8 +87,8 @@ canvas {
 }
 
 .country-tag.slot2:hover {
-    background: rgba(255, 215, 0, 0.4);
-    box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+    background: rgba(192, 192, 192, 0.4);
+    box-shadow: 0 0 15px rgba(192, 192, 192, 0.6);
 }
 
 /* GRID CONTAINER DA DIREITA */
