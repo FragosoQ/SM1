@@ -33,7 +33,7 @@ canvas {
 /* DESTINATION CARD */
 .destination-card {
     position: fixed;
-    top: 15vh;
+    top: 10vh;
     left: 4vw;
     background-color: rgba(243, 241, 241, 0.1);
     backdrop-filter: blur(20px);
@@ -94,7 +94,7 @@ canvas {
 /* GRID CONTAINER DA DIREITA */
 .grid-container {
     position: fixed;
-    top: 15vh;
+    top: 10vh;
     bottom: 5vh;
     right: 4vw;
     display: grid;
@@ -193,7 +193,7 @@ canvas {
 /* PROGRESS BAR */
 .progress-bar-container {
     position: fixed;
-    bottom: 5vh;
+    bottom: 10vh;
     left: 4vw;
     width: clamp(200px, 40vw, 600px); /* Largura fluida */
     z-index: 1000;
