@@ -377,14 +377,6 @@ const drawDonutChart = (containerId, percentage, fillColor) => {
     const container = d3.select(containerId).select('.card-chart');
     container.html('');
 
-    // Se a percentagem é 0, não desenhar o gráfico
-    if (percentage === 0) {
-        container.style('display', 'none');
-        return;
-    }
-    
-    container.style('display', 'flex');
-
     const containerNode = container.node();
     if (!containerNode) return;
 
@@ -490,17 +482,6 @@ const drawMultipleDonutCharts = (containerId, chartsData) => {
     const container = d3.select(containerId).select('.card-chart');
     container.html('');
 
-    // Filtrar apenas charts com percentagem > 0
-    const validChartsData = chartsData.filter(chart => chart.percentage > 0);
-    
-    // Se não houver charts válidos, ocultar o container
-    if (validChartsData.length === 0) {
-        container.style('display', 'none');
-        return;
-    }
-    
-    container.style('display', 'flex');
-
     const containerNode = container.node();
     if (!containerNode) return;
 
@@ -509,7 +490,7 @@ const drawMultipleDonutCharts = (containerId, chartsData) => {
     const height = rect.height;
 
     // For 2 charts, each gets half the width
-    const chartWidth = (width / validChartsData.length) - 10;
+    const chartWidth = (width / chartsData.length) - 10;
     const chartHeight = height - 20;
     const size = Math.min(chartWidth, chartHeight);
     
@@ -540,7 +521,7 @@ const drawMultipleDonutCharts = (containerId, chartsData) => {
         .style('height', '100%');
 
     // Draw each chart
-    validChartsData.forEach((chartInfo, index) => {
+    chartsData.forEach((chartInfo, index) => {
         const chartContainer = mainContainer.append('div')
             .style('display', 'flex')
             .style('flex-direction', 'column')
@@ -709,8 +690,6 @@ const updateEvoProgress = async () => {
         // Clear existing progress bars
         progressContainer.innerHTML = '';
         
-        let validProgressBars = 0; // Contador de progress bars válidas (> 0%)
-        
         // Create progress bar for each slot
         for (let i = 0; i < slots.length; i++) {
             const slot = slots[i];
@@ -726,12 +705,6 @@ const updateEvoProgress = async () => {
                     
                     if (!isNaN(percentage)) {
                         const clampedPercentage = Math.min(100, Math.max(0, percentage));
-                        
-                        // Não criar progress bar se percentagem é 0
-                        if (clampedPercentage === 0) {
-                            console.log(`⚠️ Progress bar ${i + 1} skipped: 0% (Chave: ${slot.chave}, Lote: ${slot.loteId})`);
-                            continue;
-                        }
                         
                         // Usa slotNumber-1 como índice (Slot_1 = índice 0 = amarelo, Slot_2 = índice 1 = laranja)
                         const colorIndex = (slot.slotNumber - 1) % chartConfig.colors.slotColors.length;
@@ -752,20 +725,12 @@ const updateEvoProgress = async () => {
                         wrapper.appendChild(fillDiv);
                         progressContainer.appendChild(wrapper);
                         
-                        validProgressBars++; // Incrementa contador
-                        
                         console.log(`✅ Progress bar ${i + 1} updated: ${clampedPercentage}% (Chave: ${slot.chave}, Lote: ${slot.loteId})`);
                     }
                 }
             } catch (error) {
                 console.error(`Error fetching progress for slot ${i + 1}:`, error);
             }
-        }
-        
-        // Se não houver progress bars válidas (todas são 0%), ocultar o container
-        if (validProgressBars === 0) {
-            progressContainer.style.display = 'none';
-            console.log('⚠️ All progress values are 0% - hiding progress bar container');
         }
         
     } catch (error) {
