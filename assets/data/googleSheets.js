@@ -191,12 +191,16 @@ async function convertSheetDataToAppFormat(sheetData) {
   console.log('📋 Primeiras colunas:', columnNames.slice(0, 5).join(', '));
   console.log('📋 Últimas colunas:', columnNames.slice(-5).join(', '));
   
+  // Encontra a coluna "Chave de Procura" (coluna A)
+  const chaveCol = columnNames.find(col => /^chave\s*de\s*procura$/i.test(col.trim()));
+  
   // Encontra as colunas de países (procura pelos nomes exatos dos cabeçalhos)
   const country1Col = columnNames.find(col => /^país\s*1$/i.test(col.trim()));
   const country2Col = columnNames.find(col => /^país\s*2$/i.test(col.trim()));
   const country3Col = columnNames.find(col => /^país\s*3$/i.test(col.trim()));
   
   console.log('🗺️ Colunas de países identificadas:');
+  console.log(`   - Chave de Procura: "${chaveCol}" (índice: ${columnNames.indexOf(chaveCol)})`);
   console.log(`   - País 1: "${country1Col}" (índice: ${columnNames.indexOf(country1Col)})`);
   console.log(`   - País 2: "${country2Col}" (índice: ${columnNames.indexOf(country2Col)})`);
   console.log(`   - País 3: "${country3Col}" (índice: ${columnNames.indexOf(country3Col)})`);
@@ -214,9 +218,17 @@ async function convertSheetDataToAppFormat(sheetData) {
   // Sempre adiciona Portugal
   uniqueCountries.add('Portugal');
   
-  console.log('📝 Processando linhas da planilha:');
+  console.log('📝 Processando linhas da planilha (apenas slots "Em Curso"):');
   
   sheetData.forEach((row, index) => {
+    // Verifica se a linha tem "Slot_X_Em Curso" na coluna Chave de Procura
+    const chaveValue = row[chaveCol];
+    const isActiveSlot = chaveValue && /Slot_\d+_Em Curso/i.test(String(chaveValue).trim());
+    
+    if (!isActiveSlot) {
+      return; // Pula esta linha se não for um slot ativo
+    }
+    
     const countries = [
       row[country1Col],
       row[country2Col],
@@ -224,7 +236,7 @@ async function convertSheetDataToAppFormat(sheetData) {
     ].filter(c => c && String(c).trim() !== '');
     
     if (countries.length > 0) {
-      console.log(`   Linha ${index + 1}: ${countries.join(' | ')}`);
+      console.log(`   Linha ${index + 1} (${chaveValue}): ${countries.join(' | ')}`);
     }
     
     // Para cada linha, cria conexões de Portugal para cada país mencionado

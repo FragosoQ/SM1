@@ -50,7 +50,7 @@ const fetchAllSlotsData = async () => {
         const rows = json.table.rows;
         const slotRows = [];
         
-        // Procura por linhas com "Slot_1_Em Curso" ou "Slot_2_Em Curso" na coluna A (Chave de Procura - índice 0)
+        // Procura por linhas com "Slot_X_Em Curso" (X = 1 a 8) na coluna A (Chave de Procura - índice 0)
         rows.forEach((row, index) => {
             const chaveCell = row.c[0]; // Coluna A (Chave de Procura - índice 0)
             const chaveValue = chaveCell ? chaveCell.v : null;
@@ -58,10 +58,19 @@ const fetchAllSlotsData = async () => {
             const loteValue = loteCell ? loteCell.v : null;
             
             if (chaveValue && typeof chaveValue === 'string') {
-                if (chaveValue.includes('Slot_1_Em Curso')) {
-                    slotRows.push({ slotNumber: 1, rowIndex: index + 2, loteId: loteValue, chave: chaveValue });
-                } else if (chaveValue.includes('Slot_2_Em Curso')) {
-                    slotRows.push({ slotNumber: 2, rowIndex: index + 2, loteId: loteValue, chave: chaveValue });
+                // Procura por padrão "Slot_X_Em Curso" onde X é um número de 1 a 8
+                const slotMatch = chaveValue.match(/Slot_(\d+)_Em Curso/);
+                if (slotMatch) {
+                    const slotNumber = parseInt(slotMatch[1], 10);
+                    // Valida que o número está entre 1 e 8
+                    if (slotNumber >= 1 && slotNumber <= 8) {
+                        slotRows.push({ 
+                            slotNumber: slotNumber, 
+                            rowIndex: index + 2, 
+                            loteId: loteValue, 
+                            chave: chaveValue 
+                        });
+                    }
                 }
             }
         });

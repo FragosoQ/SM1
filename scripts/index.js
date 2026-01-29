@@ -293,11 +293,17 @@ let isWaving = false;
 let waveStartTime = 0;
 let isGlowing = false;
 let glowStartTime = 0;
+let isRippling = false; // Novo: efeito de onda de movimento
+let rippleStartTime = 0;
+let ripplePhase = 0;
 const EFFECT_INTERVAL = 20 * 1000; // 20 segundos
 const ROTATION_DURATION = 5000; // 5 segundos para completar a rotação
 const PULSE_DURATION = 2500; // 2.5 segundos para completar a pulsação
 const WAVE_DURATION = 3000; // 3 segundos para completar a ondulação
 const GLOW_DURATION = 4000; // 4 segundos para completar a transição de cor
+const RIPPLE_DURATION = 5000; // 5 segundos para completar a onda de movimento (mais lento para fluidez)
+const RIPPLE_SPEED = 2.0; // Velocidade da onda
+const RIPPLE_AMPLITUDE = 6; // Amplitude da onda (distância radial)
 
 /**
  * Configura efeitos aleatórios (rotação ou pulsação) a cada 20 segundos
@@ -316,18 +322,20 @@ function setupPeriodicRotation() {
 }
 
 function startRandomEffect() {
-  // Escolhe aleatoriamente entre rotação, pulsação, ondulação e brilho
+  // Escolhe aleatoriamente entre rotação, pulsação, ondulação de cor, brilho e onda de movimento
   const randomValue = Math.random();
   let effect;
   
-  if (randomValue < 0.25) {
+  if (randomValue < 0.2) {
     effect = 'rotation';
-  } else if (randomValue < 0.5) {
+  } else if (randomValue < 0.4) {
     effect = 'pulse';
-  } else if (randomValue < 0.75) {
+  } else if (randomValue < 0.6) {
     effect = 'wave';
-  } else {
+  } else if (randomValue < 0.8) {
     effect = 'glow';
+  } else {
+    effect = 'ripple';
   }
   
   console.log(`Random effect selected: ${effect} (random: ${randomValue.toFixed(2)})`);
@@ -338,13 +346,15 @@ function startRandomEffect() {
     startPointsPulse();
   } else if (effect === 'wave') {
     startPointsWave();
-  } else {
+  } else if (effect === 'glow') {
     startGlobeGlow();
+  } else {
+    startPointsRipple();
   }
 }
 
 function startFullRotation() {
-  if (isRotating || isPulsing || isWaving || isGlowing) return;
+  if (isRotating || isPulsing || isWaving || isGlowing || isRippling) return;
   
   isRotating = true;
   rotationStartTime = Date.now();
@@ -354,7 +364,7 @@ function startFullRotation() {
 }
 
 function startPointsPulse() {
-  if (isRotating || isPulsing || isWaving || isGlowing) return;
+  if (isRotating || isPulsing || isWaving || isGlowing || isRippling) return;
   
   if (!groups.points) {
     console.warn('groups.points not available for heartbeat effect');
@@ -369,7 +379,7 @@ function startPointsPulse() {
 }
 
 function startPointsWave() {
-  if (isRotating || isPulsing || isWaving || isGlowing) return;
+  if (isRotating || isPulsing || isWaving || isGlowing || isRippling) return;
   
   if (!elements.globePoints) {
     console.warn('elements.globePoints not available for color transition effect');
@@ -383,7 +393,7 @@ function startPointsWave() {
 }
 
 function startGlobeGlow() {
-  if (isRotating || isPulsing || isWaving || isGlowing) return;
+  if (isRotating || isPulsing || isWaving || isGlowing || isRippling) return;
   
   if (!elements.globe) {
     console.warn('elements.globe not available for glow effect');
@@ -394,6 +404,29 @@ function startGlobeGlow() {
   glowStartTime = Date.now();
   
   console.log('Starting globe glow effect');
+}
+
+function startPointsRipple() {
+  if (isRotating || isPulsing || isWaving || isGlowing || isRippling) return;
+  
+  if (!elements.globePoints) {
+    console.warn('elements.globePoints not available for ripple effect');
+    return;
+  }
+  
+  // Guarda posições originais se ainda não foram guardadas
+  const pointsInstance = groups.points.children[0];
+  if (pointsInstance && !pointsInstance.userData.originalPositions) {
+    const positions = elements.globePoints.geometry.attributes.position.array;
+    pointsInstance.userData.originalPositions = new Float32Array(positions);
+    console.log('Original positions saved for ripple effect');
+  }
+  
+  isRippling = true;
+  rippleStartTime = Date.now();
+  ripplePhase = 0;
+  
+  console.log('Starting points ripple wave effect');
 }
 
 
@@ -477,6 +510,81 @@ function animate(app) {
       elements.globePoints.material.color.set(config.colors.globeDotColor);
       isWaving = false;
       console.log('Points color transition complete');
+    }
+  }
+
+  // Efeito de onda de movimento nos pontos (ripple effect)
+  if (isRippling && elements.globePoints) {
+    const elapsed = Date.now() - rippleStartTime;
+    const progress = Math.min(elapsed / RIPPLE_DURATION, 1);
+    
+    // Acessa as posições dos pontos
+    const positions = elements.globePoints.geometry.attributes.position.array;
+    const pointsInstance = groups.points.children[0]; // Pega a instância Points
+    
+    if (pointsInstance && pointsInstance.userData.originalPositions) {
+      // Calcula os limites Y (topo e fundo do globo)
+      let minY = Infinity;
+      let maxY = -Infinity;
+      
+      for (let i = 1; i < pointsInstance.userData.originalPositions.length; i += 3) {
+        const y = pointsInstance.userData.originalPositions[i];
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+      
+      const yRange = maxY - minY;
+      
+      // A onda desce de cima para baixo
+      const wavePosition = maxY - (progress * yRange); // Posição atual da frente de onda
+      
+      // Restaura e anima cada ponto
+      for (let i = 0; i < positions.length; i += 3) {
+        const originalX = pointsInstance.userData.originalPositions[i];
+        const originalY = pointsInstance.userData.originalPositions[i + 1];
+        const originalZ = pointsInstance.userData.originalPositions[i + 2];
+        
+        // Distância do ponto à frente de onda (em Y)
+        const distanceToWave = originalY - wavePosition;
+        
+        // Largura da onda (quanto do globo é afetado ao mesmo tempo)
+        const waveWidth = yRange * 0.3; // 30% da altura total
+        
+        // Calcula intensidade baseada na proximidade à frente de onda
+        // Usando função gaussiana para transição suave
+        const intensity = Math.exp(-(distanceToWave * distanceToWave) / (waveWidth * waveWidth));
+        
+        // Offset radial (empurra para fora)
+        const waveOffset = intensity * RIPPLE_AMPLITUDE;
+        
+        // Calcula vetor normalizado da posição (direção radial)
+        const length = Math.sqrt(originalX * originalX + originalY * originalY + originalZ * originalZ);
+        const dirX = originalX / length;
+        const dirY = originalY / length;
+        const dirZ = originalZ / length;
+        
+        // Aplica o offset na direção radial
+        positions[i] = originalX + dirX * waveOffset;
+        positions[i + 1] = originalY + dirY * waveOffset;
+        positions[i + 2] = originalZ + dirZ * waveOffset;
+      }
+      
+      // Marca que a geometria precisa ser atualizada
+      elements.globePoints.geometry.attributes.position.needsUpdate = true;
+    }
+    
+    // Para quando completar a onda
+    if (progress >= 1) {
+      // Restaura posições originais
+      if (pointsInstance && pointsInstance.userData.originalPositions) {
+        for (let i = 0; i < positions.length; i++) {
+          positions[i] = pointsInstance.userData.originalPositions[i];
+        }
+        elements.globePoints.geometry.attributes.position.needsUpdate = true;
+      }
+      isRippling = false;
+      ripplePhase = 0;
+      console.log('Points ripple wave complete (top to bottom)');
     }
   }
 
