@@ -682,21 +682,56 @@ const fetchStatus = async () => {
 
 /**
  * Fetches GOAL chart data from Google Sheets PSMulti
+ * Calculates average of Dias Prazo, Dias Usados, Folga for all active slots
  */
 const fetchGoalData = async () => {
-    // Read from PSMulti, row 2, columns AN, AO, AP (Dias Prazo, Dias Usados, Folga)
-    const SHEET_URL = `https://docs.google.com/spreadsheets/d/1GQUB52a2gKR429bjqJrNkbP5rjR7Z_4v85z9M7_Cr8Y/gviz/tq?tqx=out:csv&sheet=PSMulti&range=A2:AP2`;
-
     try {
-        const response = await d3.text(SHEET_URL);
+        // Fetch all active slots
+        const slots = await fetchAllSlotsData();
         
-        // Parse CSV response
-        const values = response.split('\n')[0]?.split(',').map(v => v.replace(/^"|"$/g, '').trim()) || [];
+        if (slots.length === 0) {
+            return { diasPrazo: 0, diasUsados: 0, folga: 0 };
+        }
+        
+        let totalDiasPrazo = 0;
+        let totalDiasUsados = 0;
+        let totalFolga = 0;
+        let validSlots = 0;
+        
+        // Fetch data for each slot and sum values
+        for (const slot of slots) {
+            const SHEET_URL = `https://docs.google.com/spreadsheets/d/${chartConfig.spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${chartConfig.sheetName}&range=AL${slot.rowIndex}:AN${slot.rowIndex}`;
+            
+            try {
+                const response = await d3.text(SHEET_URL);
+                const values = response.split('\n')[0]?.split(',').map(v => v.replace(/^"|"$/g, '').trim()) || [];
+                
+                const diasPrazo = parseFloat(values[0]) || 0;   // Column AL (index 0)
+                const diasUsados = parseFloat(values[1]) || 0;  // Column AM (index 1)
+                const folga = parseFloat(values[2]) || 0;       // Column AN (index 2)
+                
+                totalDiasPrazo += diasPrazo;
+                totalDiasUsados += diasUsados;
+                totalFolga += folga;
+                validSlots++;
+                
+                console.log(`📊 GOAL Slot ${slot.slotNumber}: Prazo=${diasPrazo}, Usados=${diasUsados}, Folga=${folga}`);
+            } catch (error) {
+                console.error(`Error fetching GOAL data for slot ${slot.slotNumber}:`, error);
+            }
+        }
+        
+        // Calculate averages
+        const avgDiasPrazo = validSlots > 0 ? totalDiasPrazo / validSlots : 0;
+        const avgDiasUsados = validSlots > 0 ? totalDiasUsados / validSlots : 0;
+        const avgFolga = validSlots > 0 ? totalFolga / validSlots : 0;
+        
+        console.log(`📊 GOAL Averages: Prazo=${avgDiasPrazo.toFixed(1)}, Usados=${avgDiasUsados.toFixed(1)}, Folga=${avgFolga.toFixed(1)}`);
         
         return {
-            diasPrazo: parseFloat(values[44]) || 0,   // Column AN (Dias Prazo)
-            diasUsados: parseFloat(values[45]) || 0,  // Column AO (Dias Usados)
-            folga: parseFloat(values[46]) || 0        // Column AP (Folga)
+            diasPrazo: avgDiasPrazo,
+            diasUsados: avgDiasUsados,
+            folga: avgFolga
         };
 
     } catch (error) {
