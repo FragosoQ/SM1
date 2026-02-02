@@ -380,8 +380,16 @@ const drawDonutChart = (containerId, percentage, fillColor) => {
     const containerNode = container.node();
     if (!containerNode) return;
 
-    // Fixed size for all pie charts to ensure consistency across all cards
-    const size = 120;
+    const rect = containerNode.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+
+    // Calculate size based on available space, but limit to ensure consistency
+    const size = Math.min(Math.min(width, height) - 20, 150);
+    
+    if (size <= 0) {
+        return;
+    }
 
     const radius = size / 2;
     const innerRadius = radius * 0.65;
@@ -478,11 +486,29 @@ const drawMultipleDonutCharts = (containerId, chartsData) => {
     const containerNode = container.node();
     if (!containerNode) return;
 
+    const rect = containerNode.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+
     // Determine layout based on number of charts
     const isGridLayout = chartsData.length > 2;
     
-    // Fixed size for all pie charts to ensure consistency across all cards
-    const size = 120;
+    let size;
+    if (isGridLayout) {
+        // Grid 2x2: each chart gets a quarter of the space
+        const chartWidth = (width / 2) - 15;
+        const chartHeight = (height / 2) - 15;
+        size = Math.min(chartWidth, chartHeight, 120);
+    } else {
+        // Linear layout for 1 or 2 charts
+        const chartWidth = (width / chartsData.length) - 10;
+        const chartHeight = height - 20;
+        size = Math.min(chartWidth, chartHeight, 150);
+    }
+    
+    if (size <= 0) {
+        return;
+    }
 
     const radius = size / 2;
     const innerRadius = radius * 0.65;
