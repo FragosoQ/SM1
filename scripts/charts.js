@@ -489,10 +489,21 @@ const drawMultipleDonutCharts = (containerId, chartsData) => {
     const width = rect.width;
     const height = rect.height;
 
-    // For 2 charts, each gets half the width
-    const chartWidth = (width / chartsData.length) - 10;
-    const chartHeight = height - 20;
-    const size = Math.min(chartWidth, chartHeight);
+    // Determine layout based on number of charts
+    const isGridLayout = chartsData.length > 2;
+    
+    let size;
+    if (isGridLayout) {
+        // Grid 2x2: each chart gets a quarter of the space
+        const chartWidth = (width / 2) - 15;
+        const chartHeight = (height / 2) - 15;
+        size = Math.min(chartWidth, chartHeight);
+    } else {
+        // Linear layout for 1 or 2 charts
+        const chartWidth = (width / chartsData.length) - 10;
+        const chartHeight = height - 20;
+        size = Math.min(chartWidth, chartHeight);
+    }
     
     if (size <= 0) {
         return; 
@@ -511,9 +522,11 @@ const drawMultipleDonutCharts = (containerId, chartsData) => {
         .startAngle(-Math.PI * 0.5) 
         .endAngle(Math.PI * 1.5);
 
-    // Create a container for all charts
+    // Create a container for all charts with conditional layout
     const mainContainer = container.append('div')
-        .style('display', 'flex')
+        .style('display', isGridLayout ? 'grid' : 'flex')
+        .style('grid-template-columns', isGridLayout ? 'repeat(2, 1fr)' : null)
+        .style('grid-template-rows', isGridLayout ? 'repeat(2, 1fr)' : null)
         .style('justify-content', 'center')
         .style('align-items', 'center')
         .style('gap', '10px')
@@ -615,9 +628,6 @@ const updateAllCharts = async () => {
 
     // Fetch all slots (Slot_1_Em Curso, Slot_2_Em Curso)
     const slots = await fetchAllSlotsData();
-    
-    // Contador de charts visíveis
-    let visibleChartsCount = 0;
 
     for (const chart of charts) {
         // Skip charts with null column (não existem)
@@ -626,10 +636,6 @@ const updateAllCharts = async () => {
             d3.select(chart.id).style('display', 'none');
             continue;
         }
-        
-        // Incrementa contador de charts visíveis
-        visibleChartsCount++;
-        d3.select(chart.id).style('display', '');
         
         if (slots.length === 0) {
             // Se não existem slots, mostrar um gráfico default (usando a primeira linha como fallback)
@@ -653,16 +659,6 @@ const updateAllCharts = async () => {
                 });
             }
             drawMultipleDonutCharts(chart.id, chartsData);
-        }
-    }
-    
-    // Aplica classe se houver mais de 2 cards visíveis
-    const gridContainer = document.querySelector('.grid-container');
-    if (gridContainer) {
-        if (visibleChartsCount > 2) {
-            gridContainer.classList.add('multiple-charts');
-        } else {
-            gridContainer.classList.remove('multiple-charts');
         }
     }
 };
