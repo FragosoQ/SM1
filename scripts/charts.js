@@ -161,6 +161,9 @@ const mapCountryToEnglish = (countryNamePT) => {
     return ptToEn[normalized] || countryNamePT.toUpperCase();
 };
 
+// Fixed size for all pie charts (diameter in pixels)
+const FIXED_CHART_SIZE = 120;
+
 // Configuration for charts
 const chartConfig = {
     colors: {
@@ -380,15 +383,8 @@ const drawDonutChart = (containerId, percentage, fillColor) => {
     const containerNode = container.node();
     if (!containerNode) return;
 
-    const rect = containerNode.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
-
-    const size = Math.min(width, height) - 20;
-    
-    if (size <= 0) {
-        return; 
-    }
+    // Use fixed size for consistency across all cards
+    const size = FIXED_CHART_SIZE;
 
     const radius = size / 2;
     const innerRadius = radius * 0.65;
@@ -485,29 +481,11 @@ const drawMultipleDonutCharts = (containerId, chartsData) => {
     const containerNode = container.node();
     if (!containerNode) return;
 
-    const rect = containerNode.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
-
     // Determine layout based on number of charts
     const isGridLayout = chartsData.length > 2;
     
-    let size;
-    if (isGridLayout) {
-        // Grid 2x2: each chart gets a quarter of the space
-        const chartWidth = (width / 2) - 15;
-        const chartHeight = (height / 2) - 15;
-        size = Math.min(chartWidth, chartHeight);
-    } else {
-        // Linear layout for 1 or 2 charts
-        const chartWidth = (width / chartsData.length) - 10;
-        const chartHeight = height - 20;
-        size = Math.min(chartWidth, chartHeight);
-    }
-    
-    if (size <= 0) {
-        return; 
-    }
+    // Use fixed size for consistency across all cards
+    const size = FIXED_CHART_SIZE;
 
     const radius = size / 2;
     const innerRadius = radius * 0.65;
